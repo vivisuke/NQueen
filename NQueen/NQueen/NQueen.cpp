@@ -8,6 +8,7 @@
 using namespace std;
 
 typedef const char cchar;
+typedef unsigned int uint;
 
 int    g_count;       // 解個数
 //int g_nNode;       // 末端ノード数
@@ -15,14 +16,16 @@ int    g_count;       // 解個数
 void test_BF();           // ブルートフォース
 void test_BF_MT();     // ブルートフォース＋マルチスレッド
 void test_BT();			//	バックトラッキング
-void test_BTFlags();	//	バックトラッキング
+void test_BTFlags();	//	バックトラッキング＋フラグ
+void test_BTBitmap();	//	バックトラッキング＋ビットマップ
 
 int main()
 {
     //test_BF();
     //test_BF_MT();
     //test_BT();
-    test_BTFlags();
+    //test_BTFlags();
+    test_BTBitmap();
     //
     std::cout << "OK\n";
 }
@@ -117,7 +120,7 @@ void test_BF_MT()
 {
     cout << "test_BF_MT()\n";
     const int MAX_NQ = 9;
-    char row[MAX_NQ][MAX_NQ];    //  各行のウィーン位置、[1, NQ]
+    //char row[MAX_NQ][MAX_NQ];    //  各行のウィーン位置、[1, NQ]
     int nq = MAX_NQ;
         auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
         //int count = generateAndCheckMT(row, 0, nq);
@@ -216,6 +219,41 @@ void test_BTFlags()
         auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
         //generateAndCheck<nq>(row, 0);
         backtrackingFlags(col, rup, rdn, 0, nq);
+        auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+        auto dur = end - start;        // 要した時間を計算
+        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+        cout << nq << ": count = " << g_count << ",\t";
+        //cout << "nNode = " << g_nNode << ",\t";
+        cout << "dur = " << msec << "msec\n";
+    }
+    cout << "\n";
+}
+void backtrackingBitmap(int cols,      //  配置可能カラム位置
+                    int lt, int rt,   //  1 for 使用済み
+                    int n, int NQ)              //  n:配置済みクイーン数, [0, NQ)
+{
+    int flags = ~(lt|rt) & cols;
+    while( flags ) {
+        int bit = -flags & flags;      //  一番右の１のビットを取り出す
+        if( n + 1 == NQ )
+            ++g_count;    // 解を発見
+        else
+            backtrackingBitmap(cols^bit, (lt|bit)<<1, (rt|bit)>>1, n+1, NQ);
+        flags ^= bit;       //  処理済みビットをOFF
+    }
+}
+void test_BTBitmap()
+{
+    cout << "test_BTBitmap()\n";
+    const int MAX_NQ = 15;
+    for (int nq = 4; nq <= MAX_NQ; ++nq) {
+        g_count = 0;
+        //g_nNode = 0;
+        auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+        //generateAndCheck<nq>(row, 0);
+        int cols = (1<<nq)-1;		//  配置可能カラム位置
+        int lt = 0, rt = 0;			//  1 for 使用済み
+        backtrackingBitmap(cols, lt, rt, 0, nq);
         auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
         auto dur = end - start;        // 要した時間を計算
         auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
