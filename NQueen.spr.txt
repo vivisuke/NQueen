@@ -1,4 +1,14 @@
 ﻿NQueen.spr.txt
 
 ◎ C 03/30 03/30 0.001 ToDo プロジェクト作成
+◎ C 03/30 03/30 0.001 ToDo ブルートフォーステスト
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
+● C 03/30             ToDo 
 ● C 03/30             ToDo 
