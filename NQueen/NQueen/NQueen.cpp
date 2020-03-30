@@ -7,16 +7,20 @@
 
 using namespace std;
 
+typedef const char cchar;
+
 int    g_count;       // 解個数
 //int g_nNode;       // 末端ノード数
 
 void test_BF();           // ブルートフォース
 void test_BF_MT();     // ブルートフォース＋マルチスレッド
+void test_BT();			//	バックトラッキング
 
 int main()
 {
-    test_BF();
-    test_BF_MT();
+    //test_BF();
+    //test_BF_MT();
+    test_BT();
     //
     std::cout << "OK\n";
 }
@@ -133,5 +137,43 @@ void test_BF_MT()
         cout << nq << ": count = " << count << ",\t";
         //cout << "nNode = " << g_nNode << ",\t";
         cout << "dur = " << msec << "msec\n";
+    cout << "\n";
+}
+bool testNth(const char row[], int n)
+{
+    for(int i = 0; i < n; ++i) {
+        if( row[i] == row[n] || abs(row[i] - row[n]) == n - i )
+            return false;
+    }
+    return true;
+}
+void backtracking(char row[], int n, int NQ)     //  n:配置済みクイーン数
+{
+    for(row[n] = 1; row[n] <= NQ; ++row[n]) {
+        if( testNth(row, n) ) {    // 制約を満たしている場合のみ先に進む
+            if( n + 1 == NQ )
+                ++g_count;    // 解を発見
+            else
+                backtracking(row, n+1, NQ);
+        }
+    }
+}void test_BT()
+{
+    cout << "test_BT()\n";
+    const int MAX_NQ = 14;
+    char row[MAX_NQ];       // 各行のウィーン位置、[1, NQ]
+    for (int nq = 4; nq <= MAX_NQ; ++nq) {
+        g_count = 0;
+        //g_nNode = 0;
+        auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+        //generateAndCheck<nq>(row, 0);
+        backtracking(row, 0, nq);
+        auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+        auto dur = end - start;        // 要した時間を計算
+        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+        cout << nq << ": count = " << g_count << ",\t";
+        //cout << "nNode = " << g_nNode << ",\t";
+        cout << "dur = " << msec << "msec\n";
+    }
     cout << "\n";
 }
