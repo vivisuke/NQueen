@@ -15,12 +15,14 @@ int    g_count;       // 解個数
 void test_BF();           // ブルートフォース
 void test_BF_MT();     // ブルートフォース＋マルチスレッド
 void test_BT();			//	バックトラッキング
+void test_BTFlags();	//	バックトラッキング
 
 int main()
 {
     //test_BF();
     //test_BF_MT();
-    test_BT();
+    //test_BT();
+    test_BTFlags();
     //
     std::cout << "OK\n";
 }
@@ -168,6 +170,52 @@ void backtracking(char row[], int n, int NQ)     //  n:配置済みクイーン�
         auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
         //generateAndCheck<nq>(row, 0);
         backtracking(row, 0, nq);
+        auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+        auto dur = end - start;        // 要した時間を計算
+        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+        cout << nq << ": count = " << g_count << ",\t";
+        //cout << "nNode = " << g_nNode << ",\t";
+        cout << "dur = " << msec << "msec\n";
+    }
+    cout << "\n";
+}
+void backtrackingFlags(
+                    bool col[], bool rup[], bool rdn[],    // 垂直・対角線方向に配置済みフラグ
+                    int n, int NQ)      //  n:配置済みクイーン数, [0, NQ)
+{
+    for(int q = 0; q < NQ; ++q) {
+        const int uix = n + q;
+        const int dix = q - n + NQ - 1;
+        if( !col[q] && !rup[uix] && !rdn[dix] ) {
+            if( n + 1 == NQ )
+                ++g_count;    // 解を発見
+            else {
+                col[q] = true;
+                rup[uix] = true;
+                rdn[dix] = true;
+                backtrackingFlags(col, rup, rdn, n+1, NQ);
+                col[q] = false;
+                rup[uix] = false;
+                rdn[dix] = false;
+            }
+        }
+    }
+}
+void test_BTFlags()
+{
+    cout << "test_BTFlags()\n";
+    const int MAX_NQ = 14;
+    //char row[MAX_NQ];       // 各行のウィーン位置、[1, NQ]
+    bool col[MAX_NQ], rup[MAX_NQ*2], rdn[MAX_NQ*2];
+    for(auto& x: col) x = false;
+    for(auto& x: rup) x = false;
+    for(auto& x: rdn) x = false;
+    for (int nq = 4; nq <= MAX_NQ; ++nq) {
+        g_count = 0;
+        //g_nNode = 0;
+        auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+        //generateAndCheck<nq>(row, 0);
+        backtrackingFlags(col, rup, rdn, 0, nq);
         auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
         auto dur = end - start;        // 要した時間を計算
         auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
